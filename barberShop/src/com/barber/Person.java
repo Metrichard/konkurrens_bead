@@ -13,8 +13,7 @@ public class Person {
     private final Boolean wantBeardTrim;
     private final int waitStarted;
     private int waitEnded;
-
-    //factory for person
+    
     private Person(String name, Boolean wantsBeard, int waitStarted){
         this.name = name;
         wantBeardTrim = wantsBeard;

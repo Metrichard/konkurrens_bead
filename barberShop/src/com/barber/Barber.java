@@ -12,15 +12,13 @@ public class Barber implements Runnable {
     public void run()
     {
         //lekérdezi a queue-t és blokkol
-        while(barberShop.getSimulatedDays() < barberShop.getDaysToSimulate()) {
-            Person person = barberShop.getNextCostumer(this);
-            if (person == null) {
-                waitUntil(10);
-            } else {
-                //WriteAction(person);
-                int CutTime = (int) (Math.random() * 180) + 20;
-                waitUntil(CutTime);
-            }
+        Person person = barberShop.getNextCostumer(this);
+        if (person == null) {
+            waitUntil(10);
+        } else {
+            //WriteAction(person);
+            int CutTime = (int) (Math.random() * 180) + 20;
+            waitUntil(CutTime);
         }
     }
 

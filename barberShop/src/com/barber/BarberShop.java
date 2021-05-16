@@ -1,10 +1,7 @@
 package com.barber;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 public class BarberShop {
     private final BlockingQueue<Person> waitingCostumers;
@@ -69,16 +66,16 @@ public class BarberShop {
 
     public void mainProcess() throws InterruptedException
     {
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
-        executor.execute(new Barber(true));
-        executor.execute(new Barber(false));
+        ScheduledThreadPoolExecutor executor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(2);
+        executor.schedule(new Barber(true), 5, TimeUnit.MILLISECONDS);
+        executor.schedule(new Barber(false), 5, TimeUnit.MILLISECONDS);
 
         //clock osztály? signal küldés időközönként
         while(simulatedDays < DAYS_TO_SIMULATE){
             int servedToday = 0;
             System.out.println("\nDay " + (simulatedDays +1) + " has started.");
 
-            servedToday = simulateDay(servedToday);
+            servedToday = simulateDay(servedToday, executor);
 
             System.out.println("");
             costumersServedEachDay.set(simulatedDays, servedToday);
@@ -99,7 +96,7 @@ public class BarberShop {
         executor.shutdown();
     }
 
-    private int simulateDay(int servedToday) throws InterruptedException {
+    private int simulateDay(int servedToday, ThreadPoolExecutor executor) throws InterruptedException {
         int hoursInDay = REPRESENTATION_OF_AN_HOUR * 24;
         while(clock <= hoursInDay) {
             if ((int)(Math.random() * 100) < 99) {
