@@ -4,7 +4,7 @@ import java.util.*;
 
 public class BarberShop {
     //queue kéne, peek..., timeout-os blocking
-    private final List<Person> _waitingCostumers = Collections.synchronizedList(new ArrayList<>());
+    private final BlockingQueue<Person> _waitingCostumers = Collections.synchronizedList(new ArrayList<>());
     private final List<Integer> elapsedTimeOfWaiting;
     private final List<Integer> costumersServedEachDay;
     private final int MAX_NUMBER_OF_PPL_IN_WAITING_ROOM = 5;
