@@ -8,7 +8,7 @@ public class Main {
         else
             oneHourAsMsInProg = 400;
 
-        BarberShop barberShop = new BarberShop(oneHourAsMsInProg);
+        BarberShop barberShop = BarberShop.CreateBarberShopObject(oneHourAsMsInProg);
         try {
             barberShop.MainProcess();
         }

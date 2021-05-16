@@ -4,10 +4,9 @@ public class Barber implements Runnable {
     private final BarberShop barberShop;
     private final Boolean doesBeardTrim;
 
-    //barbershop-ból singletont
-    public Barber(Boolean doesBeardTrim, BarberShop barberShop){
+    public Barber(Boolean doesBeardTrim){
         this.doesBeardTrim = doesBeardTrim;
-        this.barberShop = barberShop;
+        this.barberShop = BarberShop.GetBarberShopObject();
     }
 
     public void run()

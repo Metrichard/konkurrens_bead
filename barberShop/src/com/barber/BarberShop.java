@@ -3,6 +3,8 @@ package com.barber;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class BarberShop {
     //queue kéne, peek..., timeout-os blocking
@@ -19,7 +21,30 @@ public class BarberShop {
     private int notServedDuringClose;
     private int notServedDuringOpen;
 
-    public BarberShop(int oneHourAsMsInProg){
+    // Singleton declaration
+    private static BarberShop barberShop;
+
+    /**
+     * Creating a single instance of the barber shop class, making it singleton
+     * @param oneHourAsMsInProg The amount of microseconds that represent an hour in the program
+     * @return either the already made instance of the BarberShop class or a newly made instance of it
+     */
+    public static BarberShop CreateBarberShopObject(int oneHourAsMsInProg){
+        if(barberShop == null){
+            barberShop = new BarberShop(oneHourAsMsInProg);
+        }
+        return barberShop;
+    }
+
+    /**
+     * Gets the one and only instance of this class
+     * @return The already made instance of the BarberShop class
+     */
+    public static BarberShop GetBarberShopObject(){
+        return barberShop;
+    }
+
+    private BarberShop(int oneHourAsMsInProg){
         waitingCostumers = new ArrayBlockingQueue<Person>(MAX_NUMBER_OF_PPL_IN_WAITING_ROOM);
         notServedDuringOpen = 0;
         notServedDuringClose = 0;
@@ -42,12 +67,9 @@ public class BarberShop {
 
     public void MainProcess() throws InterruptedException
     {
-        //executorral
-        Thread[] barbers = new Thread[2];
-        barbers[0] = new Thread(new Barber(true, this));
-        barbers[1] = new Thread(new Barber(false, this));
-        barbers[0].start();
-        barbers[1].start();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        executor.execute(new Barber(true));
+        executor.execute(new Barber(false));
 
         //clock osztály? signal küldés időközönként
         while(simulatedDays < DAYS_TO_SIMULATE){
@@ -72,10 +94,11 @@ public class BarberShop {
         for (int i = 0 ; i < DAYS_TO_SIMULATE; i++){
             System.out.println("\tOn day " + (i+1) + ", this many people were served: " + costumersServedEachDay.get(i));
         }
+        executor.shutdown();
     }
 
     private int SimulateDay(int servedToday) throws InterruptedException {
-        int hoursInDay = 9600;
+        int hoursInDay = oneHourAsMsInProg * 24;
         while(clock <= hoursInDay) {
             if ((int)(Math.random() * 100) < 99) {
                 Person person = RandomDataGenerator.GenerateRandomPerson(clock);
@@ -90,8 +113,8 @@ public class BarberShop {
                 }
             }
             System.out.print("\rTime: " + clock);
-            Thread.sleep(oneHourAsMsInProg /12);
-            clock += oneHourAsMsInProg /12;
+            Thread.sleep(oneHourAsMsInProg /16);
+            clock += oneHourAsMsInProg /16;
         }
         return servedToday;
     }
