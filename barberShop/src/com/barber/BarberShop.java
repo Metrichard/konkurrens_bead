@@ -1,10 +1,7 @@
 package com.barber;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 public class BarberShop {
     private final BlockingQueue<Person> waitingCostumers;
@@ -72,6 +69,8 @@ public class BarberShop {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
         executor.execute(new Barber(true));
         executor.execute(new Barber(false));
+        ScheduledThreadPoolExecutor scheduledExecutor = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
+        scheduledExecutor.scheduleWithFixedDelay(new Clock( REPRESENTATION_OF_AN_HOUR*24, REPRESENTATION_OF_AN_HOUR),0,REPRESENTATION_OF_AN_HOUR*24, TimeUnit.MILLISECONDS);// Putting the clock on the wall
 
         //clock osztály? signal küldés időközönként
         while(simulatedDays < DAYS_TO_SIMULATE){
@@ -87,9 +86,8 @@ public class BarberShop {
             simulatedDays++;
             clock = 0;
         }
-
-        writeEndResultStatistics();
         executor.shutdown();
+        writeEndResultStatistics();
     }
 
     private void writeEndResultStatistics() {
@@ -105,10 +103,10 @@ public class BarberShop {
 
     private int simulateDay(int servedToday) throws InterruptedException {
         int hoursInDay = REPRESENTATION_OF_AN_HOUR * 24;
-        while(clock <= hoursInDay) {
+        while(!Clock.hasDayEnded()) {
             if ((int)(Math.random() * 100) < 99) {
                 Person person = Person.getNewPerson(clock);
-                if(SHOP_OPENING_TIME <= clock && clock <= SHOP_CLOSING_TIME) {
+                if(Clock.hasWorkStarted()) {
                     if (!ifPlaceAddPerson(person)) {
                         notServedDuringOpen++;
                     }else{
@@ -177,5 +175,9 @@ public class BarberShop {
 
     public int getSimulatedDays(){
         return simulatedDays;
+    }
+
+    public Boolean isSimulationRunning(){
+        return DAYS_TO_SIMULATE != simulatedDays;
     }
 }
