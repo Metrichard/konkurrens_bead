@@ -13,7 +13,7 @@ public class Barber implements Runnable {
     {
         //lekérdezi a queue-t és blokkol
         while(barberShop.getSimulatedDays() < barberShop.getDaysToSimulate()) {
-            Person person = barberShop.getNextCostumer(this);
+            Person person = getNextCostumer();
             if (person == null) {
                 waitUntil(10);
             } else {
@@ -22,6 +22,30 @@ public class Barber implements Runnable {
                 waitUntil(CutTime);
             }
         }
+    }
+
+    public synchronized Person getNextCostumer() {
+        Person nextOne = barberShop.peekInWaitingPeople();
+
+        if(nextOne == null)
+            return null;
+
+        if(doesBeardTrim() && nextOne.doesWantBeardTrim()){
+            return removeAndGetNextOne();
+        }
+
+        if(doesBeardTrim() && nextOne.doesWantBeardTrim()){
+            return null;
+        }
+
+        return removeAndGetNextOne();
+    }
+
+    private Person removeAndGetNextOne() {
+        Person nextOne = barberShop.removeInTheNextInQueue();
+        nextOne.setWaitEnded(barberShop.getCurrentTime());
+        barberShop.addAverageTimeToList(nextOne);
+        return nextOne;
     }
 
     private void WriteAction(Person person) {

@@ -139,32 +139,13 @@ public class BarberShop {
         return false;
     }
 
-    //ez mehetne a barbe-be
-    public synchronized Person getNextCostumer(Barber barber) {
-        if(waitingCostumers.isEmpty())
-            return null;
+    public synchronized Person removeInTheNextInQueue() { return waitingCostumers.remove(); }
 
-        Person nextOne = waitingCostumers.peek();
+    public synchronized Person peekInWaitingPeople() { return waitingCostumers.peek(); }
 
-        if(barber.doesBeardTrim() && nextOne.doesWantBeardTrim()){
-            return removeAndGetNextOne();
-        }
+    public synchronized int getCurrentTime() { return clock; }
 
-        if(!barber.doesBeardTrim() && nextOne.doesWantBeardTrim()){
-            return null;
-        }
-
-        return removeAndGetNextOne();
-    }
-
-    private Person removeAndGetNextOne() {
-        Person nextOne = waitingCostumers.remove();
-        nextOne.setWaitEnded(clock);
-        addAverageTimeToList(nextOne);
-        return nextOne;
-    }
-
-    private void addAverageTimeToList(Person person){
+    public void addAverageTimeToList(Person person){
         elapsedTimeOfWaiting.add(person.getFullWaitTime());
     }
 
