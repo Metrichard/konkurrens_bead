@@ -49,13 +49,13 @@ public class BarberShop {
         SHOP_CLOSING_TIME = oneHourAsMsInProg * 17;
         REPRESENTATION_OF_AN_HOUR = oneHourAsMsInProg;
         // Program solving tools
-        waitingCostumers = new ArrayBlockingQueue<Person>(MAX_NUMBER_OF_PPL_IN_WAITING_ROOM);
+        waitingCostumers = new ArrayBlockingQueue<>(MAX_NUMBER_OF_PPL_IN_WAITING_ROOM);
         clock = 0;
         simulatedDays = 0;
         // Variables for the answers
         notServedDuringOpen = 0;
         notServedDuringClose = 0;
-        elapsedTimeOfWaiting = new ArrayList<Integer>();
+        elapsedTimeOfWaiting = new ArrayList<>();
         costumersServedEachDay = initServedArray();
     }
 
@@ -80,7 +80,7 @@ public class BarberShop {
 
             servedToday = simulateDay(servedToday);
 
-            System.out.println("");
+            System.out.println();
             costumersServedEachDay.set(simulatedDays, servedToday);
             System.out.println("\nDay " + (simulatedDays +1) + " has ended.");
             Thread.sleep(1000);
@@ -88,6 +88,11 @@ public class BarberShop {
             clock = 0;
         }
 
+        writeEndResultStatistics();
+        executor.shutdown();
+    }
+
+    private void writeEndResultStatistics() {
         System.out.println("\n\n\nResults:\nCostumers served: " + getAllCostumersServed());
         System.out.println("Costumers not served because barbershop was closed: " + notServedDuringClose);
         System.out.println("Costumers not served because barbershop was full: " + notServedDuringOpen);
@@ -96,7 +101,6 @@ public class BarberShop {
         for (int i = 0 ; i < DAYS_TO_SIMULATE; i++){
             System.out.println("\tOn day " + (i+1) + ", this many people were served: " + costumersServedEachDay.get(i));
         }
-        executor.shutdown();
     }
 
     private int simulateDay(int servedToday) throws InterruptedException {
@@ -116,8 +120,8 @@ public class BarberShop {
             }
 
             System.out.print("\rTime: " + clock);
-            Thread.sleep(REPRESENTATION_OF_AN_HOUR /16);
-            clock += REPRESENTATION_OF_AN_HOUR /16;
+            Thread.sleep(REPRESENTATION_OF_AN_HOUR /8);
+            clock += REPRESENTATION_OF_AN_HOUR /8;
         }
         return servedToday;
     }
@@ -139,7 +143,6 @@ public class BarberShop {
     }
 
     //ez mehetne a barbe-be
-    //inkább blocking queue-nak
     public synchronized Person getNextCostumer(Barber barber) {
         if(waitingCostumers.isEmpty())
             return null;

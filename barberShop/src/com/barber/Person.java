@@ -7,7 +7,7 @@ import java.util.Set;
 public class Person {
     private static final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
     private static final Random rand = new Random();
-    private static final Set<String> identifiers = new HashSet<String>();
+    private static final Set<String> identifiers = new HashSet<>();
 
     private final String name;
     private final Boolean wantBeardTrim;
