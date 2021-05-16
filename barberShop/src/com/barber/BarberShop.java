@@ -1,30 +1,33 @@
 package com.barber;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 public class BarberShop {
     //queue kéne, peek..., timeout-os blocking
-    private final List<Person> _waitingCostumers = Collections.synchronizedList(new ArrayList<>());
+    private final BlockingQueue<Person> waitingCostumers;
     private final List<Integer> elapsedTimeOfWaiting;
     private final List<Integer> costumersServedEachDay;
-    private final int MAX_NUMBER_OF_PPL_IN_WAITING_ROOM = 5;
+    private final static int MAX_NUMBER_OF_PPL_IN_WAITING_ROOM = 5;
+    private final static int DAYS_TO_SIMULATE = 2;
     private final int SHOP_OPENING_TIME;
     private final int SHOP_CLOSING_TIME;
-    private static int DAYS_TO_SIMULATE = 5;
-    private final int _oneHourAsMsInProg;
-    private int _clock;
-    private int _simulatedDays;
-    private int _notServedDuringClose;
+    private final int oneHourAsMsInProg;
+    private int clock;
+    private int simulatedDays;
+    private int notServedDuringClose;
     private int notServedDuringOpen;
 
     public BarberShop(int oneHourAsMsInProg){
+        waitingCostumers = new ArrayBlockingQueue<Person>(MAX_NUMBER_OF_PPL_IN_WAITING_ROOM);
         notServedDuringOpen = 0;
-        _notServedDuringClose = 0;
-        _clock = 0;
-        _simulatedDays = 0;
+        notServedDuringClose = 0;
+        clock = 0;
+        simulatedDays = 0;
         SHOP_OPENING_TIME = oneHourAsMsInProg * 9;
         SHOP_CLOSING_TIME = oneHourAsMsInProg * 17;
-        _oneHourAsMsInProg = oneHourAsMsInProg;
+        this.oneHourAsMsInProg = oneHourAsMsInProg;
         elapsedTimeOfWaiting = new ArrayList<Integer>();
         costumersServedEachDay = InitServedArray();
     }
@@ -47,22 +50,22 @@ public class BarberShop {
         barbers[1].start();
 
         //clock osztály? signal küldés időközönként
-        while(_simulatedDays < DAYS_TO_SIMULATE){
+        while(simulatedDays < DAYS_TO_SIMULATE){
             int servedToday = 0;
-            System.out.println("\nDay " + (_simulatedDays +1) + " has started.");
+            System.out.println("\nDay " + (simulatedDays +1) + " has started.");
 
             servedToday = SimulateDay(servedToday);
 
             System.out.println("");
-            costumersServedEachDay.set(_simulatedDays, servedToday);
-            System.out.println("\nDay " + (_simulatedDays +1) + " has ended.");
-            Thread.sleep(2000);
-            _simulatedDays++;
-            _clock = 0;
+            costumersServedEachDay.set(simulatedDays, servedToday);
+            System.out.println("\nDay " + (simulatedDays +1) + " has ended.");
+            Thread.sleep(1000);
+            simulatedDays++;
+            clock = 0;
         }
 
         System.out.println("\n\n\nResults:\nCostumers served: " + GetAllCostumersServed());
-        System.out.println("Costumers not served because barbershop was closed: " + _notServedDuringClose);
+        System.out.println("Costumers not served because barbershop was closed: " + notServedDuringClose);
         System.out.println("Costumers not served because barbershop was full: " + notServedDuringOpen);
         System.out.println("Average wait time is " + elapsedTimeOfWaiting.stream().mapToDouble(d -> d).average().orElse(0.0));
         System.out.println("Costumers served each day: ");
@@ -73,22 +76,22 @@ public class BarberShop {
 
     private int SimulateDay(int servedToday) throws InterruptedException {
         int hoursInDay = 9600;
-        while(_clock <= hoursInDay) {
+        while(clock <= hoursInDay) {
             if ((int)(Math.random() * 100) < 99) {
-                Person person = RandomDataGenerator.GenerateRandomPerson(_clock);
-                if(SHOP_OPENING_TIME <= _clock && _clock <= SHOP_CLOSING_TIME) {
+                Person person = RandomDataGenerator.GenerateRandomPerson(clock);
+                if(SHOP_OPENING_TIME <= clock && clock <= SHOP_CLOSING_TIME) {
                     if (!IfPlaceAddPerson(person)) {
                         notServedDuringOpen++;
                     }else{
                         servedToday++;
                     }
                 }else{
-                    _notServedDuringClose++;
+                    notServedDuringClose++;
                 }
             }
-            System.out.print("\rTime: " + _clock);
-            Thread.sleep(5);
-            _clock += 5;
+            System.out.print("\rTime: " + clock);
+            Thread.sleep(oneHourAsMsInProg /12);
+            clock += oneHourAsMsInProg /12;
         }
         return servedToday;
     }
@@ -102,30 +105,26 @@ public class BarberShop {
     }
 
     private Boolean IfPlaceAddPerson(Person person){
-        if(GetFreeSpaces() > 0){
-            _waitingCostumers.add(person);
+        if(waitingCostumers.remainingCapacity() > 0){
+            waitingCostumers.add(person);
             return true;
         }
         return false;
     }
 
-    private int GetFreeSpaces(){
-        return MAX_NUMBER_OF_PPL_IN_WAITING_ROOM - _waitingCostumers.size();
-    }
-
     //ez mehetne a barbe-be
     //inkább blocking queue-nak
     public synchronized Person GetNextCostumer(Barber barber) {
-        if(_waitingCostumers.size() == 0)
+        if(waitingCostumers.size() == 0)
             return null;
 
-        Person nextOne = _waitingCostumers.get(0);
+        Person nextOne = waitingCostumers.peek();
 
         if(barber.doesBeardTrim()){
             if(nextOne.doesWantBeardTrim()){
-                _waitingCostumers.remove(nextOne);
+                return removeAndGetNextOne();
             }else {
-                _waitingCostumers.remove(nextOne);
+                return removeAndGetNextOne();
             }
         }
 
@@ -134,8 +133,12 @@ public class BarberShop {
         }
 
         //nullpointer exception cucc
-        _waitingCostumers.remove(nextOne);
-        nextOne.SetWaitEnded(_clock);
+        return removeAndGetNextOne();
+    }
+
+    private Person removeAndGetNextOne() {
+        Person nextOne = waitingCostumers.remove();
+        nextOne.SetWaitEnded(clock);
         addAverageTimeToList(nextOne);
         return nextOne;
     }
@@ -149,6 +152,6 @@ public class BarberShop {
     }
 
     public int getSimulatedDays(){
-        return _simulatedDays;
+        return simulatedDays;
     }
 }

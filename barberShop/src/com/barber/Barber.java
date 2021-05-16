@@ -1,20 +1,20 @@
 package com.barber;
 
 public class Barber implements Runnable {
-    private final BarberShop _barberShop;
-    private final Boolean _doesBeardTrim;
+    private final BarberShop barberShop;
+    private final Boolean doesBeardTrim;
 
     //barbershop-ból singletont
     public Barber(Boolean doesBeardTrim, BarberShop barberShop){
-        _doesBeardTrim = doesBeardTrim;
-        _barberShop = barberShop;
+        this.doesBeardTrim = doesBeardTrim;
+        this.barberShop = barberShop;
     }
 
     public void run()
     {
         //lekérdezi a queue-t és blokkol
-        while(_barberShop.getSimulatedDays() < _barberShop.getDaysToSimulate()) {
-            Person person = _barberShop.GetNextCostumer(this);
+        while(barberShop.getSimulatedDays() < barberShop.getDaysToSimulate()) {
+            Person person = barberShop.GetNextCostumer(this);
             if (person == null) {
                 waitUntil(10);
             } else {
@@ -26,7 +26,7 @@ public class Barber implements Runnable {
     }
 
     private void WriteAction(Person person) {
-        if (_doesBeardTrim)
+        if (doesBeardTrim)
             System.out.println("\nNow working on " + person.GetName() + " hair and beard.");
         else
             System.out.println("\nNow working on " + person.GetName() + " hair.");
@@ -41,6 +41,6 @@ public class Barber implements Runnable {
     }
 
     public Boolean doesBeardTrim() {
-        return _doesBeardTrim;
+        return doesBeardTrim;
     }
 }
