@@ -1,8 +1,6 @@
 package com.barber;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class Person {
     private static final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";

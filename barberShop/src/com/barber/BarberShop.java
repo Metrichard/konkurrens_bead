@@ -1,10 +1,7 @@
 package com.barber;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 public class BarberShop {
     private final BlockingQueue<Person> waitingCostumers;
