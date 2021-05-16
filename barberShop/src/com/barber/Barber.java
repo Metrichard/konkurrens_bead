@@ -6,14 +6,14 @@ public class Barber implements Runnable {
 
     public Barber(Boolean doesBeardTrim){
         this.doesBeardTrim = doesBeardTrim;
-        this.barberShop = BarberShop.GetBarberShopObject();
+        this.barberShop = BarberShop.getBarberShopObject();
     }
 
     public void run()
     {
         //lekérdezi a queue-t és blokkol
         while(barberShop.getSimulatedDays() < barberShop.getDaysToSimulate()) {
-            Person person = barberShop.GetNextCostumer(this);
+            Person person = barberShop.getNextCostumer(this);
             if (person == null) {
                 waitUntil(10);
             } else {
@@ -26,9 +26,9 @@ public class Barber implements Runnable {
 
     private void WriteAction(Person person) {
         if (doesBeardTrim)
-            System.out.println("\nNow working on " + person.GetName() + " hair and beard.");
+            System.out.println("\nNow working on " + person.getName() + " hair and beard.");
         else
-            System.out.println("\nNow working on " + person.GetName() + " hair.");
+            System.out.println("\nNow working on " + person.getName() + " hair.");
     }
 
     private void waitUntil(int time){

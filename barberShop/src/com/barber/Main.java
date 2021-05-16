@@ -8,9 +8,9 @@ public class Main {
         else
             oneHourAsMsInProg = 400;
 
-        BarberShop barberShop = BarberShop.CreateBarberShopObject(oneHourAsMsInProg);
+        BarberShop barberShop = BarberShop.createBarberShopObject(oneHourAsMsInProg);
         try {
-            barberShop.MainProcess();
+            barberShop.mainProcess();
         }
         catch (Exception e){
             System.out.println(e.getMessage());

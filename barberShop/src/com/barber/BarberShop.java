@@ -7,7 +7,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class BarberShop {
-    //queue kéne, peek..., timeout-os blocking
     private final BlockingQueue<Person> waitingCostumers;
     private final List<Integer> elapsedTimeOfWaiting;
     private final List<Integer> costumersServedEachDay;
@@ -15,7 +14,7 @@ public class BarberShop {
     private final static int DAYS_TO_SIMULATE = 2;
     private final int SHOP_OPENING_TIME;
     private final int SHOP_CLOSING_TIME;
-    private final int oneHourAsMsInProg;
+    private final int REPRESENTATION_OF_AN_HOUR;
     private int clock;
     private int simulatedDays;
     private int notServedDuringClose;
@@ -29,7 +28,7 @@ public class BarberShop {
      * @param oneHourAsMsInProg The amount of microseconds that represent an hour in the program
      * @return either the already made instance of the BarberShop class or a newly made instance of it
      */
-    public static BarberShop CreateBarberShopObject(int oneHourAsMsInProg){
+    public static BarberShop createBarberShopObject(int oneHourAsMsInProg){
         if(barberShop == null){
             barberShop = new BarberShop(oneHourAsMsInProg);
         }
@@ -40,24 +39,27 @@ public class BarberShop {
      * Gets the one and only instance of this class
      * @return The already made instance of the BarberShop class
      */
-    public static BarberShop GetBarberShopObject(){
+    public static BarberShop getBarberShopObject(){
         return barberShop;
     }
 
     private BarberShop(int oneHourAsMsInProg){
-        waitingCostumers = new ArrayBlockingQueue<Person>(MAX_NUMBER_OF_PPL_IN_WAITING_ROOM);
-        notServedDuringOpen = 0;
-        notServedDuringClose = 0;
-        clock = 0;
-        simulatedDays = 0;
+        // Final or static data
         SHOP_OPENING_TIME = oneHourAsMsInProg * 9;
         SHOP_CLOSING_TIME = oneHourAsMsInProg * 17;
-        this.oneHourAsMsInProg = oneHourAsMsInProg;
+        REPRESENTATION_OF_AN_HOUR = oneHourAsMsInProg;
+        // Program solving tools
+        waitingCostumers = new ArrayBlockingQueue<Person>(MAX_NUMBER_OF_PPL_IN_WAITING_ROOM);
+        clock = 0;
+        simulatedDays = 0;
+        // Variables for the answers
+        notServedDuringOpen = 0;
+        notServedDuringClose = 0;
         elapsedTimeOfWaiting = new ArrayList<Integer>();
-        costumersServedEachDay = InitServedArray();
+        costumersServedEachDay = initServedArray();
     }
 
-    private List<Integer> InitServedArray() {
+    private List<Integer> initServedArray() {
         ArrayList<Integer> arrayList = new ArrayList<>();
         for(int i = 0; i < DAYS_TO_SIMULATE; ++i){
             arrayList.add(0);
@@ -65,7 +67,7 @@ public class BarberShop {
         return arrayList;
     }
 
-    public void MainProcess() throws InterruptedException
+    public void mainProcess() throws InterruptedException
     {
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
         executor.execute(new Barber(true));
@@ -76,7 +78,7 @@ public class BarberShop {
             int servedToday = 0;
             System.out.println("\nDay " + (simulatedDays +1) + " has started.");
 
-            servedToday = SimulateDay(servedToday);
+            servedToday = simulateDay(servedToday);
 
             System.out.println("");
             costumersServedEachDay.set(simulatedDays, servedToday);
@@ -86,7 +88,7 @@ public class BarberShop {
             clock = 0;
         }
 
-        System.out.println("\n\n\nResults:\nCostumers served: " + GetAllCostumersServed());
+        System.out.println("\n\n\nResults:\nCostumers served: " + getAllCostumersServed());
         System.out.println("Costumers not served because barbershop was closed: " + notServedDuringClose);
         System.out.println("Costumers not served because barbershop was full: " + notServedDuringOpen);
         System.out.println("Average wait time is " + elapsedTimeOfWaiting.stream().mapToDouble(d -> d).average().orElse(0.0));
@@ -97,13 +99,13 @@ public class BarberShop {
         executor.shutdown();
     }
 
-    private int SimulateDay(int servedToday) throws InterruptedException {
-        int hoursInDay = oneHourAsMsInProg * 24;
+    private int simulateDay(int servedToday) throws InterruptedException {
+        int hoursInDay = REPRESENTATION_OF_AN_HOUR * 24;
         while(clock <= hoursInDay) {
             if ((int)(Math.random() * 100) < 99) {
-                Person person = RandomDataGenerator.GenerateRandomPerson(clock);
+                Person person = Person.getNewPerson(clock);
                 if(SHOP_OPENING_TIME <= clock && clock <= SHOP_CLOSING_TIME) {
-                    if (!IfPlaceAddPerson(person)) {
+                    if (!ifPlaceAddPerson(person)) {
                         notServedDuringOpen++;
                     }else{
                         servedToday++;
@@ -112,14 +114,15 @@ public class BarberShop {
                     notServedDuringClose++;
                 }
             }
+
             System.out.print("\rTime: " + clock);
-            Thread.sleep(oneHourAsMsInProg /16);
-            clock += oneHourAsMsInProg /16;
+            Thread.sleep(REPRESENTATION_OF_AN_HOUR /16);
+            clock += REPRESENTATION_OF_AN_HOUR /16;
         }
         return servedToday;
     }
 
-    private int GetAllCostumersServed(){
+    private int getAllCostumersServed(){
         int sum = 0;
         for(int n : costumersServedEachDay){
             sum += n;
@@ -127,7 +130,7 @@ public class BarberShop {
         return sum;
     }
 
-    private Boolean IfPlaceAddPerson(Person person){
+    private Boolean ifPlaceAddPerson(Person person){
         if(waitingCostumers.remainingCapacity() > 0){
             waitingCostumers.add(person);
             return true;
@@ -137,37 +140,32 @@ public class BarberShop {
 
     //ez mehetne a barbe-be
     //inkább blocking queue-nak
-    public synchronized Person GetNextCostumer(Barber barber) {
-        if(waitingCostumers.size() == 0)
+    public synchronized Person getNextCostumer(Barber barber) {
+        if(waitingCostumers.isEmpty())
             return null;
 
         Person nextOne = waitingCostumers.peek();
 
-        if(barber.doesBeardTrim()){
-            if(nextOne.doesWantBeardTrim()){
-                return removeAndGetNextOne();
-            }else {
-                return removeAndGetNextOne();
-            }
+        if(barber.doesBeardTrim() && nextOne.doesWantBeardTrim()){
+            return removeAndGetNextOne();
         }
 
-        if(nextOne.doesWantBeardTrim() && !barber.doesBeardTrim()){
+        if(!barber.doesBeardTrim() && nextOne.doesWantBeardTrim()){
             return null;
         }
 
-        //nullpointer exception cucc
         return removeAndGetNextOne();
     }
 
     private Person removeAndGetNextOne() {
         Person nextOne = waitingCostumers.remove();
-        nextOne.SetWaitEnded(clock);
+        nextOne.setWaitEnded(clock);
         addAverageTimeToList(nextOne);
         return nextOne;
     }
 
     private void addAverageTimeToList(Person person){
-        elapsedTimeOfWaiting.add(person.GetWaitEnded() - person.GetWaitStarted());
+        elapsedTimeOfWaiting.add(person.getFullWaitTime());
     }
 
     public int getDaysToSimulate(){

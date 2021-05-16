@@ -1,35 +1,57 @@
 package com.barber;
 
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
 public class Person {
-    private final String _name;
-    private final Boolean _wantBeardTrim;
-    private int _waitStarted;
-    private int _waitEnded;
+    private static final String lexicon = "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345674890";
+    private static final Random rand = new Random();
+    private static final Set<String> identifiers = new HashSet<String>();
+
+    private final String name;
+    private final Boolean wantBeardTrim;
+    private final int waitStarted;
+    private int waitEnded;
 
     //factory for person
-    public Person(String name, Boolean wantsBeard, int waitStarted){
-        _name = name;
-        _wantBeardTrim = wantsBeard;
-        _waitStarted = waitStarted;
+    private Person(String name, Boolean wantsBeard, int waitStarted){
+        this.name = name;
+        wantBeardTrim = wantsBeard;
+        this.waitStarted = waitStarted;
     }
 
-    public String GetName() {
-        return _name;
+    public static Person getNewPerson(int currentTime){
+        return new Person(randomIdentifier(), Math.random() * 100 < 20, currentTime);
+    }
+
+    public String getName() {
+        return name;
     }
 
     public Boolean doesWantBeardTrim() {
-        return _wantBeardTrim;
+        return wantBeardTrim;
     }
 
-    public void SetWaitEnded(int _waitEnded) {
-        this._waitEnded = _waitEnded;
+    public void setWaitEnded(int waitEnded) {
+        this.waitEnded = waitEnded;
     }
 
-    public int GetWaitStarted() {
-        return _waitStarted;
+    public int getFullWaitTime(){
+        return (waitEnded - waitStarted);
     }
 
-    public int GetWaitEnded() {
-        return _waitEnded;
+    private static String randomIdentifier() {
+        StringBuilder builder = new StringBuilder();
+        while (builder.toString().length() == 0) {
+            int length = rand.nextInt(5) + 5;
+            for (int i = 0; i < length; i++) {
+                builder.append(lexicon.charAt(rand.nextInt(lexicon.length())));
+            }
+            if (identifiers.contains(builder.toString())) {
+                builder = new StringBuilder();
+            }
+        }
+        return builder.toString();
     }
 }
