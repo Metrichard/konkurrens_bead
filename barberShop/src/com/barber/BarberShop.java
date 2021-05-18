@@ -8,7 +8,9 @@ public class BarberShop {
     private final List<Integer> elapsedTimeOfWaiting;
     private final List<Integer> costumersServedEachDay;
     private final static int MAX_NUMBER_OF_PPL_IN_WAITING_ROOM = 5;
-    private final static int DAYS_TO_SIMULATE = 2;
+    private final static int DAYS_TO_SIMULATE = 5;
+    private static final int BARBER_NUM = 2;
+    private static final ExecutorService executor = Executors.newFixedThreadPool(BARBER_NUM);
     private final int SHOP_OPENING_TIME;
     private final int SHOP_CLOSING_TIME;
     private final int REPRESENTATION_OF_AN_HOUR;
@@ -66,7 +68,6 @@ public class BarberShop {
 
     public void mainProcess() throws InterruptedException
     {
-        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
         executor.execute(new Barber(true));
         executor.execute(new Barber(false));
 
